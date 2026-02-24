@@ -1,0 +1,23 @@
+--- wayland-1.24.0/src/wayland-server.c.orig	2025-11-10 22:11:38.000000000 +0000
++++ wayland-1.24.0/src/wayland-server.c	2025-11-10 22:12:33.000000000 +0000
+@@ -1722,11 +1722,20 @@
+ 		goto err;
+ 	}
+ 
++#if !defined(__QNX__)
+ 	if (flock(socket->fd_lock, LOCK_EX | LOCK_NB) < 0) {
+ 		wl_log("unable to lock lockfile %s, maybe another compositor is running\n",
+ 			socket->lock_addr);
+ 		goto err_fd;
+ 	}
++#else
++	/* On QNX, a fork drops the parent's flock.  To avoid this, use lockf instead. */
++	if (lockf(socket->fd_lock, F_TLOCK, 0) < 0) {
++		wl_log("unable to lock lockfile %s, maybe another compositor is running\n",
++			socket->lock_addr);
++		goto err_fd;
++	}
++#endif
+ 
+ 	if (lstat(socket->addr.sun_path, &socket_stat) < 0 ) {
+ 		if (errno != ENOENT) {

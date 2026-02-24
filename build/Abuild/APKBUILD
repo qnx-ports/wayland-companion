@@ -1,0 +1,81 @@
+#Maintainer: Aaron Bassett <abassett@qnx.com>
+
+pkgname=wayland
+pkgver=1.24.0
+pkgrel=1
+pkgdesc="A computer display server protocol"
+url="https://wayland.freedesktop.org"
+arch="all"
+license="MIT"
+depends_dev="
+    libxml2
+    libffi-dev
+    expat-dev
+    libxml2-dev
+    "
+depends="
+    expat
+    libffi
+    libxml2
+    libexpat
+    qnx-io-sock
+    qnx-fd-notify
+    qnx-memstream
+    qnx-libslog2    
+"
+makedepends="
+    $depends_dev
+    qnx-io-sock-dev
+    qnx-fd-notify-dev
+    qnx-memstream-dev
+    qnx-libslog2-dev
+    pkgconf-dev
+    pkgconf
+    meson
+    ninja
+    clang
+    libc++-dev
+    "
+subpackages="
+    $pkgname-dev
+    "
+source="https://gitlab.freedesktop.org/wayland/wayland/-/archive/$pkgver/wayland-$pkgver.tar.gz
+0001-fix-missing-symbols-and-headers.patch
+0002-fix-non-supported-tests.patch
+"
+
+build() {
+    CXX="clang++" \
+    meson \
+        setup build \
+        -Dprefix=/usr \
+	-Dc_link_args=-Wl,-lepoll,-leventfd,-ltimerfd,-lsignalfd,-lmemstream,-lsocket,-lslog2 \
+        -Ddocumentation=false
+
+    ninja -C build
+}
+
+dev() {
+    default_dev
+
+    # QNX mesa only loads wayland if its explictly being used
+    # since it can't know the so name we have to keep the unversioned so
+    mv "$subpkgdir"/usr/lib/libwayland-server.so "$pkgdir"/usr/lib
+    mv "$subpkgdir"/usr/lib/libwayland-client.so "$pkgdir"/usr/lib
+}
+
+check() {
+    XDG_RUNTIME_DIR="$(mktemp -d)" \
+    meson test --print-errorlogs -C build
+}
+
+package() {
+    DESTDIR="$pkgdir" meson install --no-rebuild -C build
+}
+
+
+sha512sums="
+729d632f8501282f9421867c15675bceb9cdd98af89656c3e230cd5e2600eaa0aaa72f614cd1fea1e350fdd8d8f3b901a45ac7a455ea51eea0510254eca23dd8  wayland-1.24.0.tar.gz
+9cdbfc6396f46634f2f71910e813d03ad5910df55ea3151be923be2cd1682c399d573a12af9335f2e6d8902fe60d0c6fdabc16b5634cfabbece32b44bb718d70  0001-fix-missing-symbols-and-headers.patch
+88828b858716ddbac697f33b60fdc9164a09981859f7efcc611d5736bdaa4a2cbde5cf334ce8b423e0095c2a247afe398f35fbeeebeecdbfc9724882ea72a62f  0002-fix-non-supported-tests.patch
+"
