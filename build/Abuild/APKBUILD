@@ -2,7 +2,7 @@
 
 pkgname=wayland
 pkgver=1.24.0
-pkgrel=${pkgrel:-0}
+pkgrel=1
 pkgdesc="A computer display server protocol"
 url="https://wayland.freedesktop.org"
 arch="all"
@@ -74,7 +74,6 @@ package() {
 }
 
 
-options="$options ${DISABLE_CHECK:+!check}"
 sha512sums="
 729d632f8501282f9421867c15675bceb9cdd98af89656c3e230cd5e2600eaa0aaa72f614cd1fea1e350fdd8d8f3b901a45ac7a455ea51eea0510254eca23dd8  wayland-1.24.0.tar.gz
 9cdbfc6396f46634f2f71910e813d03ad5910df55ea3151be923be2cd1682c399d573a12af9335f2e6d8902fe60d0c6fdabc16b5634cfabbece32b44bb718d70  0001-fix-missing-symbols-and-headers.patch
